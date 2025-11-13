@@ -12,28 +12,46 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// test route
+// Test Route
 app.get('/', (req, res) => {
-  res.send('🚑 QuickAid Backend is Running');
+  res.send('🚑 Are chala ki nhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii');
 });
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const alertRoutes = require('./routes/alertRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/alert', alertRoutes);
+app.use('/api/ai', aiRoutes);
 
-// Server + Socket setup
+// Server + Socket.io Setup
 const server = http.createServer(app);
+
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
+  cors: { origin: "*", methods: ["GET", "POST"] }
 });
+
+// Make IO global
+global.io = io;
+
 io.on('connection', (socket) => {
-  console.log('🔌 New socket connection:', socket.id);
-  socket.on('disconnect', () => console.log('❌ Disconnected', socket.id));
+  console.log(`⚡ User connected: ${socket.id}`);
+
+  // Listen for SOS alert
+  socket.on('new-alert', (data) => {
+    console.log('🚨 New alert received:', data);
+    io.emit('alert-broadcast', data);  // broadcast to responders
+  });
+
+  socket.on('accept-alert', (data) => {
+    io.emit('alert-accepted', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`❌ Disconnected: ${socket.id}`);
+  });
 });
 
 const PORT = process.env.PORT || 5000;

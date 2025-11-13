@@ -11,6 +11,15 @@ const createAlert = async (req, res) => {
       location,
       severity
     });
+
+    global.io.emit('alert-broadcast', {
+      id: newAlert._id,
+      type,
+      location,
+      severity,
+      status: 'pending'
+    });
+
     res.status(201).json({ message: 'SOS alert created', alert: newAlert });
   } catch (err) {
     res.status(500).json({ error: err.message });
