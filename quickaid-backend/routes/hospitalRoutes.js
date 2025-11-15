@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
+const hospitalAuth = require("../middleware/hospitalAuth");
+const { hospitalSignup, hospitalLogin } = require("../controllers/hospitalAuthController");
 const {
   createHospital,
   getHospitals,
@@ -12,20 +14,23 @@ const {
   verifyHospital
 } = require("../controllers/hospitalController");
 
+// AUTH
+router.post("/signup", hospitalSignup);
+router.post("/login", hospitalLogin);
+
 // CRUD
-router.post("/", createHospital);
+router.post("/", hospitalAuth, createHospital);
 router.get("/", getHospitals);
 router.get("/:id", getHospitalById);
-router.put("/:id", updateHospital);
-router.delete("/:id", deleteHospital);
 
-// Bed update
-router.patch("/:id/beds", updateBeds);
+// UPDATES
+router.put("/:id", hospitalAuth, updateHospital);
+router.patch("/:id/beds", hospitalAuth, updateBeds);
 
-// Nearby search
-router.get("/location/nearby/search", findNearbyHospitals);
+// GEO SEARCH
+router.get("/nearby", findNearbyHospitals);
 
-// Verify hospital
+// VERIFY (Admin)
 router.patch("/:id/verify", verifyHospital);
 
 module.exports = router;

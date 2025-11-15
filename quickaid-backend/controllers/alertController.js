@@ -1,5 +1,22 @@
 const Alert = require('../models/alertModel');
 const Responder = require('../models/responderModel');
+const Hospital = require("../models/hospitalModel");
+
+exports.assignNearestHospital = async (req, res) => {
+  const { lat, lng } = req.body;
+
+  const nearest = await Hospital.findOne({
+    verified: true,
+    location: {
+      $near: {
+        $geometry: { type: "Point", coordinates: [lng, lat] },
+        $maxDistance: 8000 // 8km
+      }
+    }
+  });
+
+  res.json({ assignedHospital: nearest });
+};
 
 // Create new SOS alert
 const createAlert = async (req, res) => {
